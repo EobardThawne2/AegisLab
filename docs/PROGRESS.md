@@ -1,4 +1,84 @@
+## Deployment walkthrough added (2026-10-15)
+
+- Added root deploy_guide.md at the user's request, with beginner steps for local preparation, private GitHub source, Render Python Web Service settings, uv-only commands, secret entry, exact public-origin setup, hosted browser checks and troubleshooting.
+- Cross-checked commands against render.yaml and the existing deployment notes; verified the PowerShell project path and paired Markdown code fences. Documentation-only change; application tests were not repeated.
+- No secrets were read/displayed, no repository was pushed, and no external deployment was initiated. Existing runtime checks and blockers below are unchanged.
+
+# Current checkpoint — integrated web showcase (2026-10-15)
+
+Latest user authorization replaced the earlier phase-by-phase stops with one integrated prototype and explicitly deferred Docker. Earlier phase records below are historical, not the current scope. No external deployment has been authorized/performed. Supabase via transaction pooler and HTML/CSS-only server rendering remain required.
+
+Implemented now:
+- Existing four-role authentication, private validated JSON submissions, immutable digests/history and fixed evaluation locks are preserved.
+- Trusted controller-side deterministic fixture runner: bounded Red prompts, Blue substring matching, fixed MOCK / mock-v1 response, real aggregate outcomes and ordered redacted events. No submitted code, container workers, network paths or worker volumes are executed/provisioned.
+- Recorded completed/failed fixture outcomes, measured runtime and role-specific reports. Participants receive only their own artifact metadata plus aggregate feedback; the creating Evaluator receives all locked metadata, redacted timeline and exports.
+- Deterministic event serialization, sequence/previous-event SHA-256 chain, Ed25519 signed checkpoint, safe evidence export, recorded original/modified-copy verification and an independent offline public-key verifier. Cryptography was added by the user with uv add cryptography after the sandbox blocked PyPI. uv.lock is resolved and synchronized.
+- Additive 0003_web_showcase migration stores immutable terminal runs and verification records. Previously applied migrations were not edited. Trusted local startup now applies missing additive migrations under the existing advisory lock; the running host server applied 0003 and reports all three checksums/tables current.
+- Local signing keys live in ignored local-data; production requires a stable environment-provided key and uses Secure cookies. Readiness checks actual DB/schema/signing-key availability. No secrets printed or exposed through the dashboard.
+- Validation matrix shows actual fixture bounds, references to run events and five UNVERIFIED worker boundary rows. No simulated isolation results, marker cleanliness or universal security claims.
+- Repeatable demo appends new locks/runs while reusing identical synthetic fixture versions; non-destructive scoped reset instructions preserve all existing data/history. No reset/delete endpoint was introduced.
+- Render blueprint, Vercel entrypoint/configuration and private deployment-key preparation command; no remote builds or publication. Deployment remains UNVERIFIED.
+
+Actual checks:
+- uv sync --locked: passed; 34 packages resolved / 33 checked.
+- uv run --locked ruff check .: passed.
+- uv run --locked pytest --tb=short -q: 66 passed, 1 failed direct DB connection test, 2 skipped opt-in DB tests, 1 existing Starlette/httpx deprecation warning. Full suite is NOT green. Agent subprocess sockets to PostgreSQL remain denied; do not claim direct SQL trigger/migration reapplication tests passed.
+- uv run --locked python -m aegislab.check_running: all 8 checks passed, exit 0. Running user-hosted backend reaches Supabase, reports migration 0001/0002/0003 readiness, no JavaScript and security unverified.
+- uv run --locked python -m aegislab.demo_showcase: all 23 live checks passed, exit 0, through the running Supabase-backed server. Exercises all roles, private fixtures, evaluator-only execution, actual two-turn outcome (1 allowed mock call / 1 blocked), all five unexecuted worker checks UNVERIFIED, filtered Red/Blue/Client reports, participant export denial, original PASS, modified-copy FAIL, export privacy and known Blue artifact denial to Red (404).
+- Initial live-demo attempt exceeded a 120-second harness timeout after 17 checks; that partial attempt was not called a pass. Re-ran without that harness deadline using durable ignored log capture; the complete 23-check run exited 0. No artificial application delays were used.
+- Offline CLI original export: PASS / exit 0. Modified export: FAIL / exit 1 as intended. Unit tests additionally cover altered contents/links/signatures/manifest/outcome/checks, reordered/deleted/truncated events, wrong key/run identity and rechaining without a signing key; fixture input/output/turn/deadline failure handling and locked-document digest mismatch.
+- Browser: privately signed in as Evaluator, inspected real report/matrix, tested modified-copy form (FAIL with original PASS preserved), used the HTML Run button to create another completed run, then privately signed in as Red and confirmed its report has only Red metadata and aggregate feedback, without private timeline/export controls. A browser observation timed out after modified-copy navigation; a fresh state confirmed the successful persisted rejection, so the action was not blindly repeated.
+- Saved screenshots: docs/screenshots/showcase-report.png and showcase-evidence.png (synthetic IDs/digests only). No passwords, .env contents or private key material displayed.
+- Git ignore checks confirmed .env, .venv and local-data credentials/signing key excluded. Staging failed: .git/index.lock Permission denied. The source and uv.lock remain preserved but uncommitted; previous Phase 1 commit 6b7c776 remains the last committed checkpoint. No permissions were bypassed.
+
+Recording/resume:
+- Full walkthrough and 2–3 minute narration: docs/RECORDING_SHOWCASE.md. Scope/visibility/limits: docs/SHOWCASE_SCOPE.md. Hosting preparation: docs/DEPLOYMENT.md. README and AGENTS reflect the new scope.
+- Current CLI-prepared recording run: d215a051-1886-42b4-a1dc-f87cf542e32b, evaluation adb99dcd-e304-464a-b0ee-f9afac272910. Receipt local-data/showcase_receipt.json and offline files local-data/exports/original.json, modified.json, verification-key.pem refer to this run.
+- Browser Run button also created 637d9881-55d8-463a-b72f-1ca4fe721398 against the same lock; it has its own evidence and initially unexecuted verification, correctly labeled.
+- Resume: uv run --locked uvicorn aegislab.main:app --host 127.0.0.1 --port 8000 --reload. Existing server remains running. Rehearse/reset scenario: uv run --locked python -m aegislab.demo_showcase (appends fresh synthetic run, no data deletion).
+- Browser left signed in as demo-evaluator on the CLI-prepared run at #verification, with Original PASS and Modified copy FAIL visible; marked to remain open. Credential objects were cleared.
+- Keep .env, private local-data keys/accounts, Supabase schema, .venv and uv.lock. Do not run a second server on port 8000 while the existing one is active.
+- Docker, worker isolation/cleanup, real model integration, gVisor/microVMs, CI, RAG, agents and multimodal remain outside this web showcase. Deployment config is prepared, not tested/published. Direct DB integration from the tool sandbox and Git commit remain environment blockers.
+
+---
+
 # Phase progress
+
+## Phase 2 — recording checkpoint ready (2026-10-15)
+
+User authorized Phase 2 and completed the host-side demo_setup command/server restart because the agent sandbox cannot open PostgreSQL sockets. Phase 1 is preserved at commit 6b7c776. Phase 3 is not started.
+
+Implemented:
+- Four synthetic roles with salted PBKDF2 passwords, hashed expiring sessions, HttpOnly/SameSite cookies, same-origin writes, CSRF protection and logout.
+- Inert narrow JSON fixtures; no submitted code or model is executed. The Client document explicitly describes mock-v1.
+- Owner-only document access, role-limited creation, canonical SHA-256 digests, immutable version history and idempotent repeated documents.
+- Evaluator metadata-only coordination and evaluations locking four immutable version references. Participant evaluation views expose only their own reference.
+- An additive 0002_private_versions migration with database digest constraints and update/delete/truncate rejection triggers. The previously applied 0001 migration was not edited.
+- HTML/CSS workspace, private version pages, version-locking form and an actual owner-scoped access-attempt form. No JavaScript.
+
+Actual validation:
+- Real authenticated HTTP demo: 27 checks passed; process exit 0; metadata-only receipt in local-data/phase2_receipt.json. The initial background output capture missed later output, so completion was verified from the process exit and complete receipt, not inferred from partial login output.
+- The demo exercised all four logins, private fixture creation/digests, duplicate reuse, own-only listing, known Blue artifact denial to Red (404), evaluator private-content denial, metadata-only coordination, role/CSRF/format rejection, evaluation locking, a distinct Red v2, preserved original references, preserved v1 content, Red-only evaluation references, absent mutation endpoint (405), and logout enforcement.
+- Verified original evaluation 32e1146c-1252-4e2b-bd5c-90dc94703adc still references Red v1 fbed9bb3-78aa-40c1-8554-ad974c2ab4b5 after Red v2 f5feba99-00fc-45c3-a849-7020a8c926aa was created.
+- Browser verification: Evaluator login, private policy form/idempotent reuse, version selection and evaluation creation, logout, Red login, Red v1/v2 history, known Blue denial with Observed HTTP 404, and role-filtered original evaluation page all passed.
+- Browser verification caught a real form bug: no-referrer yielded opaque form Origin headers. Changed Referrer-Policy to same-origin; normal form login succeeded afterward. Opaque/cross-origin requests remain rejected, CSRF remains required, and regression coverage was added.
+- Saved screenshots: docs/screenshots/phase2-evaluation.png and phase2-access-denied.png. They contain synthetic metadata only, no credentials.
+- uv run --locked pytest -m "not integration": 43 passed. uv run --locked ruff check . and uv sync --locked passed.
+- uv run --locked python -m aegislab.check_running: all eight live foundation/HTTP checks passed after Phase 2 integration, including readiness 200, live server-side PostgreSQL and current required tables/checksums.
+- Normal full pytest from the agent sandbox: 43 passed, 1 failed direct connection test, 2 skipped opt-in database tests, 1 existing Starlette/httpx deprecation warning. The full suite is not reported green.
+- With AEGISLAB_RUN_DB_TESTS=1, all three direct database checks failed at the sandbox connection restriction before schema/mutation verification. Raw driver exception chaining in a failure-reporting path was removed and sanitized output verified. DB-trigger mutation behavior remains unverified from this environment; no changes were committed by those failed tests.
+- The user-started server reaches Supabase transaction pooling; agent subprocesses are denied direct sockets (Windows 10013). Authorization to use the PC did not change the sandbox network boundary. No firewall or browser protections were disabled and no database proxy/admin backdoor was added.
+
+Recording and continuation:
+- Use docs/RECORDING_PHASE_2.md and docs/PHASE_2_FORMAT.md. All Python commands use uv.
+- The server is left running on localhost:8000; browser is signed in as demo-red on the verified original locked evaluation.
+- Credentials remain in ignored local-data/demo_accounts.json; the loaded browser-automation credential object was cleared. .env contents and passwords were not displayed.
+- Repeat demo: uv run --locked python -m aegislab.demo_phase2. Resume server: uv run --locked uvicorn aegislab.main:app --host 127.0.0.1 --port 8000 --reload.
+- Preserve the Supabase schema, .env, local-data credentials, .venv and uv.lock. Repeated demos reuse identical versions and create new evaluation locks; no reset is performed.
+- Docker build/startup is unverified. Worker execution/isolation, signed evidence and complete reports remain planned. These checks establish application behavior within the exercised paths, not universal security.
+- Local Phase 2 commit attempt was blocked: Git could not create .git/index.lock (Permission denied). The source and updated uv.lock remain preserved in the working tree; the Phase 1 commit 6b7c776 is still the last committed checkpoint. No Git permissions were changed or bypassed.
+- Stop at this checkpoint. Continue only when the user authorizes Phase 3.
+
 
 ## Phase 1 — running checkpoint verified for recording; environment limits below
 
@@ -85,7 +165,7 @@ Original resume plan (dependency setup and unit checks are now completed; see la
 
 | Phase | Scope | Status |
 | --- | --- | --- |
-| 2 | Authenticated roles, private submissions, fixed versions | Planned |
+| 2 | Authenticated roles, private submissions, fixed versions | Recording checkpoint ready; see latest verification |
 | 3 | Separate container workers and bounded controller interactions | Planned |
 | 4 | Real isolation validation with recorded observed outcomes | Planned |
 | 5 | Signed tamper-evident evidence, independent verification, reports | Planned |

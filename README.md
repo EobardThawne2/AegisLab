@@ -1,108 +1,69 @@
 # AegisLab
 
-Local infrastructure prototype for adversarial AI safety testing, proposed for Hack in Hills 2026, PS 04: Bayora. Team lead: Ayush Mittal, DSEU Okhla.
+A web showcase for adversarial AI evaluation provenance. Team Lead: Ayush Mittal, DSEU Okhla. Python 3.12, FastAPI, Supabase PostgreSQL pooler, server-rendered HTML/CSS. No JavaScript or Docker required for this checkpoint.
 
-Phase 1 provides a FastAPI backend, an HTML/CSS dashboard, Supabase PostgreSQL pooler integration and an initial versioned SQL migration. It does not implement participant authentication, workers, private submissions, evidence signing or role-specific reports. The model is planned as a mock.
+Works now: four authenticated synthetic roles; private validated JSON submissions; immutable version digests and evaluation locks; bounded Red/Blue/mock-model fixtures; recorded timelines; role-specific reports; hash-linked events; Ed25519-signed evidence export and offline verification; rejection of a modified evidence copy.
 
-**Current validation state:** see [docs/PROGRESS.md](docs/PROGRESS.md). Source creation does not establish runnable or security-tested status.
+Execution mode is explicitly fixture_no_isolation. Fixtures are data interpreted by the trusted controller. No participant code, real model or isolated worker is executed. All five worker-isolation checks remain UNVERIFIED.
 
-## Local setup (PowerShell)
+## Local startup
 
-Prerequisites: uv, Python 3.12, and an existing Supabase PostgreSQL project with a pooler URI. Docker is optional for container startup. All Python commands use uv; do not activate or reuse an unrelated environment.
-
-Dependencies are declared through uv and pinned in uv.lock. For a fresh local setup:
+From this directory in PowerShell, with uv installed:
 
 ~~~powershell
-Set-Location C:\Users\admin\Desktop\AegisLab
-$env:UV_CACHE_DIR = "$PWD\.cache\uv"
-# .venv has already been created; on a fresh checkout, run:
-uv venv .venv --python 3.12
+# Only on first setup if .venv does not exist:
+uv venv .venv
 uv sync --locked
+# Configure .env privately from .env.example, using the Supabase pooler.
+uv run --locked python -m aegislab.demo_setup
+uv run --locked uvicorn aegislab.main:app --host 127.0.0.1 --port 8000 --reload
 ~~~
 
-Future installations use uv sync --locked. Do not regenerate the lock unnecessarily; preserve pyproject.toml and uv.lock together.
+Open http://localhost:8000. Existing setup: keep the running server, or resume with the uvicorn command above. Local startup applies missing additive migrations, checks existing migration hashes and creates an ignored local signing key if absent. It never resets existing data. A failed setup is logged without credentials; readiness and failed operations stay visible.
 
-Copy .env.example to .env and edit .env privately:
+Demo credentials are in ignored local-data/demo_accounts.json. Read them privately before recording. Passwords are never displayed by setup or demo commands. Keep .env, .venv, .cache, local-data and signing keys out of source control. Windows file permissions rely on the user's private workspace ACL; POSIX key creation uses mode 0600.
 
-~~~powershell
-Copy-Item .env.example .env
-~~~
+## Repeatable recording setup
 
-Take the database URI from Supabase > Connect > Session pooler or Transaction pooler. Use DATABASE_POOLER_MODE to label the matching mode. Percent-encode reserved characters in the URI password. Do not place the URI in terminal history, screenshots or chat. No Supabase anon key/service key is needed; the backend uses the PostgreSQL driver, not the browser Data API.
-
-Encrypted connections are required. DATABASE_SSLMODE=require encrypts transport; it does not establish full server identity verification. For certificate and hostname validation, set verify-full and DATABASE_SSLROOTCERT to a trusted Supabase CA certificate path. That stronger configuration must be tested separately.
-
-Automatic prepared statements are disabled, and operations do not depend on retained session state. The migration lock and query timeouts are transaction-scoped. Both pooler modes are intended to work, but only modes actually tested may be called verified. A fresh connection is opened per check; this is adequate for a small recording prototype, not a load-tested design.
-
-## Start and resume
-
-~~~powershell
-uv sync --locked
-uv run --locked python -m aegislab.migrate
-uv run --locked uvicorn aegislab.main:app --host 127.0.0.1 --port 8000
-~~~
-
-Open http://127.0.0.1:8000. Stop with Ctrl+C. Resume with the same startup command; the migration is idempotent and reports "Schema already current" when unchanged.
-
-Without .env the dashboard runs with database "Not configured", schema "Not checked" and readiness HTTP 503. It never fakes database success. Editing .env then refreshing triggers a new real check unless an environment variable overrides the file.
-
-Endpoints:
-
-| Endpoint | Behavior |
-| --- | --- |
-| / | HTML/CSS dashboard; runs a real database check at page load |
-| /health/live | Backend liveness only; HTTP 200 when served |
-| /api/status | Actual backend/database/schema status; no credentials |
-| /health/ready | HTTP 200 only when DB and migration check pass; otherwise 503 |
-| /api/docs | HTML/CSS API reference; no JavaScript or external assets |
-
-The dashboard itself uses no JavaScript, external fonts, CDNs or analytics. Refresh checks is a normal page navigation. Connectivity success is separate from security validation, which remains UNVERIFIED.
-
-## Migration scope
-
-uv run python -m aegislab.migrate creates only the aegislab schema, schema_migrations and foundation_metadata. Migration digests detect accidental changes to applied migration files; these are not evaluation evidence signatures. It creates no participant data. All changes run in a transaction; no tables are dropped. The database account must be allowed to create the schema and read/write its tables. Existing Supabase schemas are left alone. RLS is enabled with no participant policies; this is not a tested participant access-control implementation.
-
-## Checks
-
-For the already-running application, this read-only smoke check exercises HTTP endpoints, the real server-side PostgreSQL probe, schema readiness, dashboard assets and API reference:
+With the server running, in another terminal:
 
 ~~~powershell
 uv run --locked python -m aegislab.check_running
+uv run --locked python -m aegislab.demo_showcase
 ~~~
 
-This command tests the existing server at http://localhost:8000. It does not connect to PostgreSQL directly: database queries execute in the running server. It is separate from direct-driver integration tests below. On 2026-10-15 all eight HTTP/application checks passed; the agent sandbox still denied outbound PostgreSQL sockets while the user-started server connected successfully.
+The demo reuses identical synthetic submissions and appends a fresh evaluation/run. It exercises real authenticated routes, both allowed and blocked turns, separated reports, private artifact denial, original evidence verification and modified-copy rejection. It prints the report URL and writes metadata-only local-data/showcase_receipt.json plus exports in local-data/exports. Supabase round trips can make this take several minutes; no progress delays are inserted.
 
+## Independent verification
+
+~~~powershell
+uv run --locked python -m aegislab.evidence local-data/exports/original.json --public-key local-data/exports/verification-key.pem
+uv run --locked python -m aegislab.evidence local-data/exports/modified.json --public-key local-data/exports/verification-key.pem
+~~~
+
+Expected: original PASS / exit 0; modified FAIL / exit 1. Pin a public key and retain checkpoints independently; downloading a key from the same server is convenient for demonstration and is not independent trust establishment. Optionally pass --expected-run RUN_UUID. Raw prompts, defense terms, model responses and credentials are omitted from evidence; content digests and aggregate outcomes remain visible to the creating evaluator.
+
+## Checks
 
 ~~~powershell
 uv run --locked ruff check .
 uv run --locked pytest
-# Connection-only check (automatically included above when DATABASE_URL is configured):
-uv run --locked pytest tests/test_database_live.py::test_live_pooler_connection -v
-# Opt in to schema/migration checks after applying the migration:
-$env:AEGISLAB_RUN_DB_TESTS = "1"
+# Optional direct schema/migration and rollback-only immutability tests:
+$env:AEGISLAB_RUN_DB_TESTS='1'
 uv run --locked pytest -m integration -v
 Remove-Item Env:AEGISLAB_RUN_DB_TESTS
 ~~~
 
-The read-only connection test runs automatically whenever DATABASE_URL is configured in .env or the environment. An unreachable or invalid configured database fails the suite; it is not skipped. Without DATABASE_URL it explicitly skips as unverified. To intentionally run only tests that do not require the database, use uv run --locked pytest -m "not integration". The separate schema/migration test remains opt-in through AEGISLAB_RUN_DB_TESTS=1 and requires migrations first. Skips are never reported as successful database checks. Automated failure-path tests use controlled doubles and do not validate Supabase connectivity or container isolation.
+The configured read-only DB connection test runs automatically. A failed configured connection fails the suite; opt-in schema checks are skipped unless enabled. Agent subprocesses in this environment cannot open PostgreSQL sockets, while the user-started backend can. Live HTTP checks exercise that backend; they do not replace direct-driver tests. See docs/PROGRESS.md for actual outcomes and limitations.
 
-## Optional Docker startup
+All Python work uses uv; dependency changes use uv add / uv add --dev. Preserve uv.lock and use uv sync --locked. If cache permissions require it, set $env:UV_CACHE_DIR = '.cache/uv'.
 
-The image uses uv venv, uv sync --locked --no-dev, and uv run. Dependencies install at build time. It excludes .env, .venv and local cache from the build context. There is no Docker socket or participant worker in Phase 1.
+## Recording, scope and deployment preparation
 
-~~~powershell
-docker compose build
-docker compose run --rm controller uv run --locked --no-sync python -m aegislab.migrate
-docker compose up -d
-docker compose logs --tail 20 controller
-# Stop while preserving the Supabase database:
-docker compose down
-~~~
+- [Exact recording steps and 2–3 minute narration](docs/RECORDING_SHOWCASE.md)
+- [Implemented/tested/planned matrix and trust model](docs/SHOWCASE_SCOPE.md)
+- [Render/Vercel preparation](docs/DEPLOYMENT.md); no external deployment performed
+- [Submission format and ownership rules](docs/PHASE_2_FORMAT.md)
+- [Actual progress and historical checkpoints](docs/PROGRESS.md)
 
-The app port is bound to loopback. Credentials come from .env at runtime; do not display compose config output in recordings. Docker's daemon was unavailable during initial setup; builds and container startup remain unverified until executed. Application container configuration does not prove participant worker isolation.
-
-## Recording and next phases
-
-Use [docs/RECORDING_PHASE_1.md](docs/RECORDING_PHASE_1.md). Keep .env and database credentials off screen. Preserve .venv, uv.lock and the database schema for the next phase. Do not start Phase 2 automatically.
-
-Sources for configuration: [Supabase connection guidance](https://supabase.com/docs/guides/database/connecting-to-postgres), [Psycopg prepared statements](https://www.psycopg.org/psycopg3/docs/advanced/prepare.html), [uv locked synchronization](https://docs.astral.sh/uv/concepts/projects/sync/), [uv in Docker](https://docs.astral.sh/uv/guides/integration/docker/).
+Older phase guides remain historical. Latest authorization replaced phase stops with one integrated web showcase and deferred Docker. Existing Docker files describe an optional older controller setup and are not needed or verified for this showcase. No benchmark or universal security claim is made.

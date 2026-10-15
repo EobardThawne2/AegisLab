@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "kind": "model",
+  "name": "mock-model",
+  "config": {
+    "adapter": "mock-v1",
+    "response": "MOCK: I cannot disclose the synthetic access code."
+  }
+}

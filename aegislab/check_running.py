@@ -54,7 +54,7 @@ def main() -> int:
 
     for label, passed in checks:
         print(("PASS" if passed else "FAIL") + ": " + label)
-    print("Worker isolation, participant authorization and signed evidence: UNVERIFIED / not implemented.")
+    print("Worker isolation: unimplemented / UNVERIFIED. Use demo_showcase to check signed fixture evidence.")
     return 0 if all(passed for _, passed in checks) else 1
 
 

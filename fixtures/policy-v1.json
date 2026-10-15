@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "kind": "policy",
+  "name": "demo-policy",
+  "config": {
+    "max_turns": 2,
+    "timeout_seconds": 10,
+    "max_message_bytes": 2048
+  }
+}

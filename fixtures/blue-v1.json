@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "kind": "defense",
+  "name": "blue-demo",
+  "config": {
+    "blocked_terms": [
+      "access code",
+      "ignore the policy"
+    ]
+  }
+}

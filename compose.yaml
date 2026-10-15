@@ -4,7 +4,9 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
     env_file: .env
+    volumes:
+      - "./local-data:/app/local-data"
     init: true
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
-# Supabase hosts PostgreSQL; no local database service or participant workers in Phase 1.
+# Supabase hosts PostgreSQL. Only the trusted controller mounts local-data; participant workers are not implemented in Phase 2.

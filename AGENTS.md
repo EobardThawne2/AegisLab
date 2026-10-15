@@ -1,9 +1,9 @@
 # AegisLab working instructions
 
 ## Authorized scope and phase boundaries
-- Implement one phase at a time. Stop after validation and a recording walkthrough.
-- Do not start the next phase until the user says "start the next phase" or names it.
-- Current phase: Phase 1. Read docs/PROGRESS.md before further work.
+- Latest user authorization: integrate the web showcase in one go; earlier phase stops are superseded.
+- Docker is deferred at the user's request. Use deterministic data fixtures; never claim worker isolation.
+- Read docs/PROGRESS.md before further work. Prepare Render/Vercel configuration but do not publish externally.
 - Database: Supabase PostgreSQL through its connection pooler. No local PostgreSQL fallback.
 - Dashboard: HTML and CSS only for now; server-rendered through FastAPI. No JavaScript.
 - Use a local CPU-friendly prototype. Do not publish externally.
@@ -19,7 +19,7 @@
 
 ## Truthful status and trust boundaries
 - Dashboard statuses must reflect executed operations. No simulated green checks.
-- Planned worker isolation, participant auth, evidence, and reports are not Phase 1 features.
+- Web showcase adds bounded controller-side mock fixtures, evidence and reports. Worker isolation remains unimplemented and UNVERIFIED.
 - A connection check is not a security validation. Keep security status UNVERIFIED.
 - Never run participant submissions on the host if Docker fails.
 - Non-root containers and a rootless daemon are separate properties.

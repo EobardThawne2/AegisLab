@@ -87,10 +87,24 @@ def database_status(settings: Settings) -> dict:
             metadata = connection.execute(
                 "SELECT project_name FROM aegislab.foundation_metadata WHERE singleton = true"
             ).fetchone()
-            if recorded == expected and metadata and metadata["project_name"] == "AegisLab":
-                result.update(schema_status="ready", schema_label="Current")
-            else:
+            if any(version not in expected or expected[version] != checksum for version, checksum in recorded.items()):
                 result.update(schema_status="mismatch", schema_label="Migration mismatch")
+            elif set(recorded) != set(expected):
+                result.update(schema_status="pending", schema_label="Migration required")
+            else:
+                objects = connection.execute(
+                    "SELECT to_regclass('aegislab.participants') IS NOT NULL AND "
+                    "to_regclass('aegislab.sessions') IS NOT NULL AND "
+                    "to_regclass('aegislab.submissions') IS NOT NULL AND "
+                    "to_regclass('aegislab.submission_versions') IS NOT NULL AND "
+                    "to_regclass('aegislab.evaluation_locks') IS NOT NULL AND "
+                    "to_regclass('aegislab.fixture_runs') IS NOT NULL AND "
+                    "to_regclass('aegislab.evidence_verifications') IS NOT NULL AS ready"
+                ).fetchone()
+                if metadata and metadata["project_name"] == "AegisLab" and objects["ready"]:
+                    result.update(schema_status="ready", schema_label="Current")
+                else:
+                    result.update(schema_status="error", schema_label="Required schema objects missing")
     except ValueError:
         result.update(status="error", label="Configuration error",
                       detail="Check the database URI, pooler mode and TLS settings in .env.")
@@ -109,11 +123,11 @@ def status_snapshot(settings: Settings) -> dict:
     database = database_status(settings)
     return {
         "project": "AegisLab",
-        "phase": 1,
+        "phase": "web-showcase",
         "checked_at": datetime.now(UTC).isoformat(timespec="seconds"),
-        "backend": {"status": "running", "label": "Running", "version": "0.1.0"},
+        "backend": {"status": "running", "label": "Running", "version": "0.3.0"},
         "database": database,
         "ready": database["status"] == "connected" and database["schema_status"] == "ready",
-        "evaluation": {"status": "planned", "model": "Mock model planned; not implemented"},
+        "evaluation": {"status": "fixture_execution_available", "model": "MOCK / mock-v1", "isolation": "unimplemented"},
         "security_validation": "unverified",
     }

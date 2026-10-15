@@ -9,7 +9,7 @@
 <body>
   <header class="topbar">
     <a class="brand" href="/" aria-label="AegisLab home"><span class="shield" aria-hidden="true">A</span>AegisLab</a>
-    <span class="top-note">LOCAL PROTOTYPE <span class="separator">/</span> PHASE 01</span>
+    <span class="top-note">LOCAL PROTOTYPE <span class="separator">/</span> WEB SHOWCASE</span>
     <a class="quiet-link" href="/api/docs">API reference <span aria-hidden="true">↗</span></a>
   </header>
   <main>
@@ -17,15 +17,15 @@
       <div class="hero-copy">
         <p class="eyebrow">SECURE INFRASTRUCTURE FOR AI SAFETY TESTING</p>
         <h1>Every finding needs<br><span>a trustworthy foundation.</span></h1>
-        <p class="intro">AegisLab connects evaluations to their submissions, execution boundaries and recorded evidence. This checkpoint establishes the local application and database foundation.</p>
-        <div class="hero-tags"><span class="tag">Phase 1 · Foundation</span><span class="tag subdued">CPU-friendly local development</span></div>
+        <p class="intro">AegisLab connects evaluations to their submissions, execution boundaries and recorded evidence. Run deterministic mock evaluations with private versions, signed evidence and role-specific reports.</p>
+        <div class="hero-tags"><a class="button" href="/workspace">Open participant workspace ↗</a><span class="tag">Web showcase · Mock model</span><span class="tag subdued">CPU-friendly local development</span></div>
       </div>
       <aside class="architecture" aria-label="Proposed architecture, not implemented">
         <div class="arch-heading">PROPOSED EVALUATION BOUNDARY <span>PLANNED</span></div>
         <div class="controller">Evaluation Controller<small>Permitted interactions only</small></div>
         <div class="connector" aria-hidden="true"></div>
-        <div class="workers"><div class="worker red">Red<small>Attack logic</small></div><div class="worker blue">Blue<small>Defense logic</small></div><div class="worker teal">Model<small>Mock planned</small></div></div>
-        <p class="arch-note">Workers and isolation controls are not implemented in this phase.</p>
+        <div class="workers"><div class="worker red">Red<small>Attack logic</small></div><div class="worker blue">Blue<small>Defense logic</small></div><div class="worker teal">Model<small>Mock fixture</small></div></div>
+        <p class="arch-note">This showcase uses controller-side fixtures. Separate workers and isolation are unimplemented.</p>
       </aside>
     </section>
     <section class="section" aria-labelledby="health-heading">
@@ -38,10 +38,10 @@
       </div>
     </section>
     <section class="section" aria-labelledby="workflow-heading">
-      <div class="section-heading"><div><p class="eyebrow">THE EVALUATION PATH</p><h2 id="workflow-heading">From private input to verifiable results</h2></div><span class="planned-label">NEXT PHASES · NOT IMPLEMENTED</span></div>
-      <ol class="workflow">{% for step in workflow %}<li><span class="step-number">0{{ loop.index }}</span><h3>{{ step.name }}</h3><p>{{ step.detail }}</p><span class="step-phase">{{ step.phase }} · Planned</span></li>{% endfor %}</ol>
+      <div class="section-heading"><div><p class="eyebrow">THE EVALUATION PATH</p><h2 id="workflow-heading">From private input to verifiable results</h2></div><span class="planned-label">MOCK FIXTURES &amp; EVIDENCE AVAILABLE · ISOLATION DEFERRED</span></div>
+      <ol class="workflow">{% for step in workflow %}<li><span class="step-number">0{{ loop.index }}</span><h3>{{ step.name }}</h3><p>{{ step.detail }}</p><span class="step-phase">{{ step.phase }} · {{ step.state | default("Planned") }}</span></li>{% endfor %}</ol>
     </section>
-    <section class="boundary-note"><div class="note-mark" aria-hidden="true">i</div><div><h3>Report actual boundaries tested.</h3><p>Security validation, worker execution, evidence signing and participant access controls remain unverified and unimplemented. Green connectivity indicators describe only the checks shown above.</p></div><span class="badge pending">Security: UNVERIFIED</span></section>
+    <section class="boundary-note"><div class="note-mark" aria-hidden="true">i</div><div><h3>Report actual boundaries tested.</h3><p>Private versions, bounded mock evaluations, signed evidence and separated reports are available. Worker isolation remains unimplemented and UNVERIFIED. Green connectivity indicators describe only the checks shown above.</p></div><span class="badge pending">Security: UNVERIFIED</span></section>
   </main>
   <footer><span>Ayush Mittal · DSEU Okhla</span><span>Hack in Hills 2026 · PS 04: Bayora</span><a href="/api/status">View actual status JSON ↗</a></footer>
 </body>
