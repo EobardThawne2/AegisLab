@@ -1,0 +1,15 @@
+.venv/
+.cache/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+local-data/
+
+# Literal Windows tooling runtime path; not project source
+%SystemDrive%/
