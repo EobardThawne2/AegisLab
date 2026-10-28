@@ -1,3 +1,49 @@
+# Current checkpoint — integrated web showcase (2026-10-28)
+
+Latest scope remains the integrated HTML/CSS web showcase using FastAPI and Supabase PostgreSQL through its transaction pooler. Docker and worker isolation are deferred; isolation is UNVERIFIED. No external deployment has been performed.
+
+## Current verification and database status
+
+- Locked dependency sync passed. The production-only dependency sync and import check passed, including the ASGI entrypoint, dashboard template, and CSS asset; the full development environment was restored afterward.
+- `uv --cache-dir .cache/uv run --locked ruff check .`: passed.
+- `uv --cache-dir .cache/uv run --locked pytest --tb=short -q`: 66 passed, 1 failed, 2 skipped, with one Starlette/httpx deprecation warning. The failure is the configured live Supabase connection probe; schema/repeat-migration tests are skipped unless explicitly enabled. The full suite is not green. `uv --cache-dir .cache/uv run --locked pytest -m "not integration" --tb=short -q`: 66 passed, 3 deselected.
+- The running app serves the dashboard and liveness route. Its live status reports the backend running, but DB connectivity fails, schema readiness is unverified, and `/health/ready` returns 503. The login page loads; database-backed participant operations have not been verified in this environment.
+- Sanitized diagnosis: DNS and TCP reach the shared Supavisor endpoint, but PostgreSQL startup fails at tenant/user routing. Current local settings use the transaction port, transaction mode, TLS required, and project-qualified username shape. The actual endpoint/tenant pair must match the current Supabase Connect settings. No URL, hostname, project reference, username, password, or raw exception was printed; `.env` was not changed and no migrations or data writes were performed.
+- A Supabase dashboard attempt was blocked by a saved browser permission setting. No other access path was used. The project owner can update `DATABASE_URL` privately from Connect → Transaction pooler, then rerun `uv --cache-dir .cache/uv run --locked pytest tests/test_database_live.py::test_live_pooler_connection -v` and `uv --cache-dir .cache/uv run --locked python -m aegislab.check_running`.
+
+## Deployment readiness
+
+- Render and Vercel configuration is prepared, but neither host build nor deployment has been performed. Both require production environment variables; a successful live database/schema readiness check is still a prerequisite to a working deployment. Refer to `docs/DEPLOYMENT.md` and `deploy_guide.md`.
+- Production settings must include the Supabase pooler URL, transaction mode, TLS, stable signing key, production mode, and exact HTTPS public origin. For Vercel, apply migrations once from a trusted terminal and disable automatic migration at function startup.
+
+## Commit preparation
+
+- Source/configuration are unchanged in this cleanup. The only working-tree change is this progress-log consolidation. No secrets or generated local data are staged; no commit has been created.
+
+---
+## Live startup and endpoint check (2026-10-20)
+
+- Started the local app with `uv --cache-dir .cache/uv run --locked uvicorn aegislab.main:app --host 127.0.0.1 --port 8000` and left it running. The dashboard is open at `http://localhost:8000/`.
+- Direct HTTP checks from the running environment: `/health/live` 200; `/health/ready` 503 (`ready=false`, backend running, database error, schema unverified); `/api/status` 200 with security_validation unverified; `/` 200; `/static/dashboard.css` 200; `/api/docs` 200. Dashboard visibly reports FastAPI Running, Supabase Connection failed, Schema Not checked.
+- Re-ran `uv run --locked python -m aegislab.check_running`: liveness, dashboard, CSS and API-reference checks PASS; readiness, real PostgreSQL connectivity, migration readiness and fully-ready status checks FAIL. Worker isolation remains unimplemented/UNVERIFIED.
+- Startup could not reach the migration step because the actual Supabase probe failed. No schema migration or application-data write was performed by startup. No credentials or raw database errors were displayed.
+- Current practical state: the web server and presentation UI run, but database-backed submission/evaluation paths are not ready in this execution environment. Repeat the database checks from the normal PowerShell environment if its network path can reach the configured Supabase transaction pooler.
+
+---
+
+## Submission readiness audit (2026-10-20)
+
+- Re-read AGENTS.md and this progress log before verification. Current scope remains the integrated web showcase: Python 3.12, uv, FastAPI, HTML/CSS, Supabase PostgreSQL via transaction pooler. Docker workers and isolation remain out of scope and UNVERIFIED; no external deployment was started.
+- `uv sync --locked`: passed (34 resolved, 33 packages checked). The sandbox could not write uv's default user cache, so this audit used `uv --cache-dir .cache/uv sync --locked`.
+- `uv run --locked ruff check .`: passed.
+- `uv run --locked pytest --tb=short -q`: 66 passed, 1 failed (`test_live_pooler_connection` could not connect to configured Supabase from this tool session), 2 skipped opt-in DB integration tests, 1 Starlette/httpx deprecation warning. Full suite is NOT green here; DB availability/schema mutations remain unverified from this environment.
+- `uv run --locked python -m aegislab.check_running`: failed its HTTP smoke check because the app was not responding at `http://localhost:8000` during this audit; a separate Chrome check confirmed `net::ERR_CONNECTION_REFUSED`. No server was started and no database operation/migration was triggered. Start the app from the user's normal PowerShell, then re-run the checker to verify the actual host path.
+- `git check-ignore` confirmed `.env`, `.venv`, demo accounts, and local signing/deployment keys are ignored. Git working tree was clean at `de5103d` (`main`, `origin/main`).
+- No source implementation changes were needed during this audit. Existing historical live showcase/browser checks remain as recorded above; they do not replace the current failed sandbox DB probe or inactive localhost result.
+- Resume locally: `uv sync --locked`, then `uv run --locked uvicorn aegislab.main:app --host 127.0.0.1 --port 8000 --reload`; in a second terminal, `uv run --locked python -m aegislab.check_running`. Do not expose `.env` or local-data during recording.
+
+---
+
 ## Deployment walkthrough added (2026-10-15)
 
 - Added root deploy_guide.md at the user's request, with beginner steps for local preparation, private GitHub source, Render Python Web Service settings, uv-only commands, secret entry, exact public-origin setup, hosted browser checks and troubleshooting.
